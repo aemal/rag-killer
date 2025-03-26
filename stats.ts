@@ -1,6 +1,11 @@
 import { readFileSync } from 'fs';
+import { MODEL } from './config';
 
-const MODEL = "o3-mini";
+interface ModelPricing {
+    inputPrice: number;
+    outputPrice: number;
+    cachedInputPrice: number;
+}
 
 interface ModelSpec {
     name: string;
@@ -9,20 +14,40 @@ interface ModelSpec {
     bytesPerToken: number;
     bytesPerCharacter: number;
     description: string;
+    pricing: ModelPricing;
 }
 
 interface Models {
     [key: string]: ModelSpec;
 }
 
-function analyzeText(content: string, modelSpec: ModelSpec) {
+interface CostAnalysis {
+    inputCost: number;
+    outputCost: number;
+    cachedInputCost: number;
+    totalCost: number;
+}
+
+function calculateCosts(tokens: number, pricing: ModelPricing): CostAnalysis {
+    const millionTokens = tokens / 1_000_000;
+    return {
+        inputCost: millionTokens * pricing.inputPrice,
+        outputCost: millionTokens * pricing.outputPrice,
+        cachedInputCost: millionTokens * pricing.cachedInputPrice,
+        totalCost: millionTokens * pricing.inputPrice // Just input cost for analysis
+    };
+}
+
+export function analyzeText(content: string, modelSpec: ModelSpec) {
     // Basic text statistics
     const words = content.trim().split(/\s+/).length;
     const characters = content.length;
     const lines = content.split('\n').length;
 
-    // Token estimation
-    const estimatedTokens = Math.ceil(words * modelSpec.tokensPerWord);
+    // Token estimation - updated to be more accurate
+    // Using characters instead of words as it's more accurate
+    // Average of 4 characters per token for English text
+    const estimatedTokens = Math.ceil(characters / 4);
 
     // Size calculations
     const characterSize = characters * modelSpec.bytesPerCharacter;
@@ -48,12 +73,16 @@ function analyzeText(content: string, modelSpec: ModelSpec) {
     };
 }
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatPrice(price: number): string {
+    return `$${price.toFixed(4)}`;
 }
 
 function main() {
@@ -69,12 +98,17 @@ function main() {
         // Load and analyze content
         const content = readFileSync('book.txt', 'utf-8');
         const stats = analyzeText(content, modelSpec);
+        const costs = calculateCosts(stats.estimatedTokens, modelSpec.pricing);
 
         // Print results
-        console.log(`\nAnalysis for ${modelSpec.name}:`);
+        console.log(`\nAnalysis for ${modelSpec.name} (${MODEL}):`);
         console.log('='.repeat(50));
         console.log(`Model Description: ${modelSpec.description}`);
         console.log(`Context Window: ${modelSpec.contextWindow.toLocaleString()} tokens`);
+        console.log('\nPricing (per 1M tokens):');
+        console.log(`- Input: $${modelSpec.pricing.inputPrice}`);
+        console.log(`- Output: $${modelSpec.pricing.outputPrice}`);
+        console.log(`- Cached Input: $${modelSpec.pricing.cachedInputPrice}`);
         console.log('\nText Statistics:');
         console.log(`- Words: ${stats.words.toLocaleString()}`);
         console.log(`- Characters: ${stats.characters.toLocaleString()}`);
@@ -87,6 +121,11 @@ function main() {
         console.log(`- Character Size: ${formatBytes(stats.characterSize)}`);
         console.log(`- Token Size: ${formatBytes(stats.tokenSize)}`);
         console.log(`- Total Size: ${formatBytes(stats.totalSize)}`);
+        console.log('\nCost Analysis:');
+        console.log(`- Input (${stats.estimatedTokens.toLocaleString()} tokens): ${formatPrice(costs.inputCost)}`);
+        console.log(`- Cached Input: ${formatPrice(costs.cachedInputCost)}`);
+        console.log(`- Potential Output Cost: ${formatPrice(costs.outputCost)}`);
+        console.log(`- Total Cost (input only): ${formatPrice(costs.totalCost)}`);
         console.log('\nRecommendations:');
         if (stats.contextUtilization > 100) {
             console.log('⚠️  Warning: Content exceeds context window! Consider chunking the content.');

@@ -1,18 +1,28 @@
 {
-  "o3-mini": {
-    "name": "ChatGPT o3-mini",
-    "contextWindow": 200000,
-    "tokensPerWord": 0.75,
-    "bytesPerToken": 4,
-    "bytesPerCharacter": 2,
-    "description": "ChatGPT o3-mini model with 200k token context window"
-  },
   "4o-mini": {
-    "name": "4o-mini",
+    "name": "GPT-4o mini",
     "contextWindow": 128000,
     "tokensPerWord": 0.75,
     "bytesPerToken": 4,
     "bytesPerCharacter": 2,
-    "description": "4o-mini model with 128k token context window"
+    "description": "Fast, affordable small model for focused tasks with 128k token context window",
+    "pricing": {
+      "inputPrice": 0.15,
+      "outputPrice": 0.60,
+      "cachedInputPrice": 0.075
+    }
+  },
+  "o3-mini": {
+    "name": "o3-mini",
+    "contextWindow": 200000,
+    "tokensPerWord": 0.75,
+    "bytesPerToken": 4,
+    "bytesPerCharacter": 2,
+    "description": "Fast, flexible, intelligent reasoning model with 200k token context window",
+    "pricing": {
+      "inputPrice": 1.10,
+      "outputPrice": 4.40,
+      "cachedInputPrice": 0.55
+    }
   }
 } 
