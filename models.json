@@ -1,0 +1,18 @@
+{
+  "o3-mini": {
+    "name": "ChatGPT o3-mini",
+    "contextWindow": 200000,
+    "tokensPerWord": 0.75,
+    "bytesPerToken": 4,
+    "bytesPerCharacter": 2,
+    "description": "ChatGPT o3-mini model with 200k token context window"
+  },
+  "4o-mini": {
+    "name": "4o-mini",
+    "contextWindow": 128000,
+    "tokensPerWord": 0.75,
+    "bytesPerToken": 4,
+    "bytesPerCharacter": 2,
+    "description": "4o-mini model with 128k token context window"
+  }
+} 
